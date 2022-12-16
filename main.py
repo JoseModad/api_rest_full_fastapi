@@ -6,13 +6,32 @@ from fastapi import FastAPI, HTTPException, status
 
 from src.lib.managedb import ManageDb
 
-# Instancias
+# Pydantic
+
+from pydantic import BaseModel
+
+# Python
+
+from uuid import uuid4 as uuid
+
+
+# Class
+
+class ContactModel(BaseModel):
+    id: str = str(uuid())
+    name: str
+    phone: str
+
+
+
+# Instances
+
 ## Fastapi
 
 app = FastAPI()
 
 
-## Base de Datos(Json)
+## Data Base(Json)
 
 md = ManageDb()
 
@@ -48,5 +67,29 @@ def get_single_contact(id_contact: str):
         if contact["id"] == id_contact:            
             return contact
     
-    raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = "Contact not Found")    
+    raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = "Contact not Found")  
+
+
+## Creating new Contact
+
+@app.post("/api/contacts")
+def add_contact(new_contact: ContactModel):
+    contacts = md.read_contacts() 
+    
+    # Converting new contact in dictionary
+       
+    new_contact = new_contact.dict()
+    
+    # Adding new contact to dictionary
+    
+    contacts.append(new_contact)
+    
+    # Writing changes
+    
+    md.write_contacts(contacts)
+    return {
+        "success": True,
+        "message": "Added new Contact"
+    }
+  
       

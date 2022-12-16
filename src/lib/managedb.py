@@ -18,3 +18,10 @@ class ManageDb:
             # Converting db to json       
            
            return json.loads(data.read())
+
+
+    # Write a new contact
+
+    def write_contacts(self, new_data):
+        with open(self.__address_file, "w") as data:
+            data.write(json.dumps(new_data))

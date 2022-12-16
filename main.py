@@ -123,4 +123,28 @@ def update_contact(id_contact: str, new_contact: ContactModel):
                 "success": True,
                 "message": "Updated contact"
             }
-    raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = "Contact not Found")   
+    raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = "Contact not Found")  
+
+
+# Delete Contact
+ 
+@app.delete("/api/contacts/{id_contact}")
+def remove_contact(id_contact: str):   
+    contacts = md.read_contacts()
+    
+    # Validation if contact id exists
+    
+    for index, contact in enumerate(contacts):
+        if contact["id"] == id_contact:
+            
+            # Remove contact
+            
+            contacts.pop(index)
+            
+            md.write_contacts(contacts)
+            
+            return {
+            "success": True,
+            "message": "Deleted Contact"
+        }
+    raise HTTPException(status_code = status.HTTP_404_NOT_FOUND)

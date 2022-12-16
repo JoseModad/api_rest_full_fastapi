@@ -92,4 +92,35 @@ def add_contact(new_contact: ContactModel):
         "message": "Added new Contact"
     }
   
-      
+ 
+ # Update Contact
+ 
+@app.put("/api/contacts/{id_contact}")
+def update_contact(id_contact: str, new_contact: ContactModel):   
+    contacts = md.read_contacts()
+    
+    # Validation if contact id exists
+    
+    for index, contact in enumerate(contacts):
+        if contact["id"] == id_contact:
+            
+            # Converting new contact in dictionary
+            
+            contacts[index] = new_contact.dict()
+            
+            # Validating if the contact has changes
+            
+            if new_contact.name == "":
+                contacts[index]["name"] = contact["name"]
+                
+            if new_contact.phone == "":
+                contacts[index]["phone"] = contact["phone"]
+                
+            # Written Contact
+            
+            md.write_contacts(contacts)
+            return {
+                "success": True,
+                "message": "Updated contact"
+            }
+    raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = "Contact not Found")   

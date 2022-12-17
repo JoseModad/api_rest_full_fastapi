@@ -1,10 +1,14 @@
 # Fastapi
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, status
 
-# Funciones Internas
+# Internal functions
 
-from src.lib.managedb import ManageDb
+from src.routes.get_contact import get_contact
+from src.routes.get_contacts import get_contacts
+from src.routes.post_contacts import post_contacts
+from src.routes.put_contact import put_contacts
+from src.routes.delete_contact import delete_contacts
 
 # Pydantic
 
@@ -31,11 +35,6 @@ class ContactModel(BaseModel):
 app = FastAPI()
 
 
-## Data Base(Json)
-
-md = ManageDb()
-
-
 # Routes
 
 ## Home
@@ -49,102 +48,32 @@ def root():
 
 @app.get("/api/contacts")
 def get_all_contacts():
-    return md.read_contacts()
+    return get_contacts()
     
 
 ## Get single contact
     
 @app.get("/api/contacts/{id_contact}", status_code = status.HTTP_200_OK)
 def get_single_contact(id_contact: str):
+    return get_contact(id_contact)
     
-    # Loading Database
-    
-    contacts = md.read_contacts()
- 
-    # Filtering by id
-       
-    for contact in contacts:
-        if contact["id"] == id_contact:            
-            return contact
-    
-    raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = "Contact not Found")  
-
 
 ## Creating new Contact
 
 @app.post("/api/contacts")
 def add_contact(new_contact: ContactModel):
-    contacts = md.read_contacts() 
-    
-    # Converting new contact in dictionary
-       
-    new_contact = new_contact.dict()
-    
-    # Adding new contact to dictionary
-    
-    contacts.append(new_contact)
-    
-    # Writing changes
-    
-    md.write_contacts(contacts)
-    return {
-        "success": True,
-        "message": "Added new Contact"
-    }
+    return post_contacts(new_contact)
   
  
  # Update Contact
  
 @app.put("/api/contacts/{id_contact}")
 def update_contact(id_contact: str, new_contact: ContactModel):   
-    contacts = md.read_contacts()
-    
-    # Validation if contact id exists
-    
-    for index, contact in enumerate(contacts):
-        if contact["id"] == id_contact:
-            
-            # Converting new contact in dictionary
-            
-            contacts[index] = new_contact.dict()
-            
-            # Validating if the contact has changes
-            
-            if new_contact.name == "":
-                contacts[index]["name"] = contact["name"]
-                
-            if new_contact.phone == "":
-                contacts[index]["phone"] = contact["phone"]
-                
-            # Written Contact
-            
-            md.write_contacts(contacts)
-            return {
-                "success": True,
-                "message": "Updated contact"
-            }
-    raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = "Contact not Found")  
+    return put_contacts(id_contact, new_contact)
 
 
 # Delete Contact
  
 @app.delete("/api/contacts/{id_contact}")
 def remove_contact(id_contact: str):   
-    contacts = md.read_contacts()
-    
-    # Validation if contact id exists
-    
-    for index, contact in enumerate(contacts):
-        if contact["id"] == id_contact:
-            
-            # Remove contact
-            
-            contacts.pop(index)
-            
-            md.write_contacts(contacts)
-            
-            return {
-            "success": True,
-            "message": "Deleted Contact"
-        }
-    raise HTTPException(status_code = status.HTTP_404_NOT_FOUND)
+    return delete_contacts(id_contact)
